@@ -1,4 +1,4 @@
-# kanban_fe
+# Kanban Board Vue App
 
 ## Project setup
 ```

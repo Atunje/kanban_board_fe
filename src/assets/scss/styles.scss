@@ -1,0 +1,39 @@
+/** Variables **/
+$primary-color:#132980;
+$primary-color-light:#465f91;
+$secondary-color: #141313;
+$light-font: #FFF;
+
+/** Mixins **/
+@mixin btn {
+  height:40px;
+  padding:5px 15px;
+  font-size: 17px;
+  border-radius: 5px;
+  border: solid 1px;
+  cursor: pointer;
+}
+
+
+
+body {
+  margin:0;
+  padding:0;
+  background-color:$secondary-color;
+}
+
+.button {
+  @include btn;
+}
+
+.primary-button{
+  @include btn;
+  background-color: $primary-color-light;
+  border:transparent;
+  color:$primary-color;
+
+  &:hover {
+    background-color: $primary-color;
+    color:$primary-color-light
+  }
+}
