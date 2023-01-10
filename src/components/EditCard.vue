@@ -2,7 +2,7 @@
   <modal name="edit-card-modal" class="modal" :adaptive="true" height="380">
     <div class="modal__title">
       <div>{{ isNew ? "Add New Card" : "Edit Card" }}</div>
-      <button @click="$emit('close')">❌</button>
+      <button @click="$modal.hide('edit-card-modal')">❌</button>
     </div>
     <form @submit.prevent="onSubmit">
       <label>Title</label>
@@ -38,10 +38,10 @@ import {CardService} from "@/services";
         this.isLoading = true;
 
         let response;
-        if(this.id === undefined) {
+        if(this.isNew) {
           response = await CardService.create(this.form);
         } else {
-          response = await CardService.update(this.id, this.form)
+          response = await CardService.update(this.card.id, this.form)
         }
 
         if(response.success) {
@@ -54,6 +54,8 @@ import {CardService} from "@/services";
             description: "",
             column_id: this.card.column_id,
           }
+        } else {
+          this.$modal.hide('edit-card-modal');
         }
 
         this.isLoading = false;
@@ -63,12 +65,10 @@ import {CardService} from "@/services";
       card: {
         handler: function(newVal) {
           this.form = newVal;
+          this.isNew = this.card.id === undefined;
         },
         deep: true
       },
-    },
-    mounted() {
-      this.isNew = this.card.id === undefined;
     }
   }
 </script>
