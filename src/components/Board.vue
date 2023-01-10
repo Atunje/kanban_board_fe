@@ -2,87 +2,102 @@
   <div>
     <div id="top">
       <div class="board-title">Kanban</div>
-      <button class="primary-button">+ Add Column</button>
+      <div>
+         <button class="btn btn--primary" @click="openColumnModal">+ Add Column</button>
+          <button class="btn btn--dump" @click="dumpSql">Sql Dump</button>
+      </div>
     </div>
 
     <div class="board-container">
-      <div class="columns">
-        <div class="column" v-for="column in columns" :key="column.id">
-          <div class="column-title">{{ column.title }}</div>
-          <draggable :list="column.cards" group="cards" @change="onChange" @end="onEnd" :id="column.id">
+      <div class="columns" v-if="columns.length > 0">
+        <div class="columns__column" v-for="column in columns" :key="column.id">
+          <div class="columns__column__title">
+            <div>{{ column.title }}</div>
+            <button class="close-btn" @click="deleteColumn(column.id)">❌</button>
+          </div>
+          <draggable class="columns__column__draggable" :list="column.cards" group="cards" @change="onChange" @end="onEnd" :id="column.id">
             <div class="card" @click="editCard(card)" v-for="card in column.cards" :key="card.id">
               {{ card.title }}
             </div>
           </draggable>
-          <button @click="editCard({column_id: column.id})">+ Add a Card</button>
+          <button @click="editCard({column_id: column.id})" class="columns__column__add-btn">+ Add a Card</button>
         </div>
       </div>
     </div>
+    <add-column @created="columnCreated"></add-column>
+    <edit-card @saved="fetchColumns" :card="dirtyCard"></edit-card>
   </div>
 </template>
 
 <script>
   import draggable from 'vuedraggable';
   import EditCard from "@/components/EditCard";
+  import {CardService, ColumnService, SqlDumpService} from "@/services";
+  import AddColumn from "@/components/AddColumn";
 
   export default {
     name: "Board",
-    components: {draggable},
+    components: {AddColumn, EditCard, draggable},
     data() {
       return {
-        columns: [
-          {
-            id: 1, title: "Academics", cards: [
-              {id: 1, title: "Bachelors Degree", description: "Lorennd dibkjs j dsdmn dsbiudsk dbjb jksd"},
-              {id: 2, title: "Masters Degree", description: "Lorennd dibkjs j dsdmn dsbiudsk dbjb jksd"},
-              {id: 3, title: "Doctorate", description: "Lorennd dibkjs j dsdmn dsbiudsk dbjb jksd"},
-            ]
-          },
-          {
-            id: 2, title: "Professional", cards: [
-              {id: 5, title: "AWS Certified Devops Engineer", description: "Lorennd dibkjs j dsdmn dsbiudsk dbjb jksd"},
-              {id: 6, title: "AWS Certified Solutions Architect", description: "Lorennd dibkjs j dsdmn dsbiudsk dbjb jksd"},
-              {id: 7, title: "Google Cloud Engineer", description: "Lorennd dibkjs j dsdmn dsbiudsk dbjb jksd"},
-              {id: 8, title: "Zend PHP Engineer", description: "Lorennd dibkjs j dsdmn dsbiudsk dbjb jksd"},
-            ]
-          },
-          {
-            id: 3, title: "Spiritual", cards: [
-              {id: 9, title: "Salvation", description: "Lorennd dibkjs j dsdmn dsbiudsk dbjb jksd"},
-              {id: 10, title: "Sanctification", description: "Lorennd dibkjs j dsdmn dsbiudsk dbjb jksd"},
-              {id: 11, title: "Holy Ghost Baptism", description: "Lorennd dibkjs j dsdmn dsbiudsk dbjb jksd"},
-              {id: 12, title: "Gifts of the Spirit", description: "Lorennd dibkjs j dsdmn dsbiudsk dbjb jksd"},
-              {id: 13, title: "Outreaches", description: "Lorennd dibkjs j dsdmn dsbiudsk dbjb jksd"},
-            ]
-          }
-        ],
+        columns: [],
+        dirtyCard: {},
         updated_item: {
           action: '',
-          elementId: 0,
+          id: 0,
           newIndex: 0,
-          newColumn: 0
         }
       }
     },
     methods: {
+      openColumnModal() {
+        this.$modal.show('add-column-modal');
+      },
       editCard(card) {
-        this.$modal.show(EditCard, card)
+        this.dirtyCard = card;
+        this.$modal.show('edit-card-modal');
       },
       onChange: function(evt) {
         if(evt.moved !== undefined) {
           this.updated_item.action = "move";
           this.updated_item.newIndex = evt.moved.newIndex;
-          this.updated_item.elementId = evt.moved.element.id;
+          this.updated_item.id = evt.moved.element.id;
         } else if(evt.added !== undefined) {
           this.updated_item.action = "added";
           this.updated_item.newIndex = evt.added.newIndex;
-          this.updated_item.elementId = evt.added.element.id;
+          this.updated_item.id = evt.added.element.id;
         }
       },
       onEnd: function(evt) {
-        this.updated_item.newColumn = evt.to.id;
-        //this.moveCard();
-      }
+        if(this.updated_item.action === "move") {
+          CardService.shift(this.updated_item.id, {new_position: this.updated_item.newIndex});
+        } else {
+          CardService.addToColumn(this.updated_item.id, {position: this.updated_item.newIndex, column_id: evt.to.id});
+        }
+      },
+      async fetchColumns() {
+        const { data } = await ColumnService.getAll();
+        this.columns = data.columns;
+      },
+      async deleteColumn(id) {
+        const response = await ColumnService.delete(id);
+        
+        if(response.success) {
+          await this.fetchColumns();
+        }
+      },
+      columnCreated(newColumn) {
+        //reload the board columns
+        this.fetchColumns();
+        //open card creation modal
+        this.editCard({column_id: newColumn.id})
+      },
+      dumpSql() {
+        SqlDumpService.dump();
+      },
+    },
+    async mounted() {
+      await this.fetchColumns()
     }
   }
 </script>
@@ -103,18 +118,38 @@
       padding: 0;
       display: inline-flex;
 
-      .column {
+      &__column {
         background-color:#3d3d3c;
         border-radius:7px;
-        padding:10px;
+        padding:10px 10px 40px 10px;
         width: 250px;
         margin-right: 20px;
+        position: relative;
 
-        .column-title {
+        &__draggable {
+          height: 80%
+        }
+
+        &__add-btn {
+          position: absolute;
+          bottom: 5px;
+          width: 92% !important;
+        }
+
+        &__title {
           color:#c2c2c0;
           font-weight: 600;
           font-size: 20px;
-          margin: 10px 15px 15px 15px;
+          margin: 10px 0 15px 15px;
+          display: flex;
+          justify-content: space-between;
+
+          .close-btn {
+            width: 30px;
+            font-size: 10px;
+            margin-top:-10px;
+            opacity: .4;
+          }
         }
 
         .card {
@@ -151,5 +186,9 @@
     font-size: 40px;
     font-weight: 700;
     margin-bottom:30px
+  }
+
+  .btn--dump {
+    margin-left:10px
   }
 </style>
