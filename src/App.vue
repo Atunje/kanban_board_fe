@@ -20,7 +20,7 @@ export default {
   font-family: 'Albert Sans', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  padding:5em 10em;
+  padding:5% 10%;
   min-height: 100vh;
 }
 </style>

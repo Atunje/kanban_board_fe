@@ -2,9 +2,9 @@
   <div>
     <div id="top">
       <div class="board-title">Kanban</div>
-      <div>
+      <div class="buttons">
          <button class="btn btn--primary" @click="openColumnModal">+ Add Column</button>
-          <button class="btn btn--dump" @click="dumpSql">Sql Dump</button>
+          <button class="btn btn--dump" @click="dumpSql">{{ isDumping ? "Loading..." : "Sql Dump" }}</button>
       </div>
     </div>
 
@@ -42,6 +42,7 @@
       return {
         columns: [],
         dirtyCard: {},
+        isDumping: false,
         updated_item: {
           action: '',
           id: 0,
@@ -92,8 +93,10 @@
         //open card creation modal
         this.editCard({column_id: newColumn.id})
       },
-      dumpSql() {
-        SqlDumpService.dump();
+      async dumpSql() {
+        this.isDumping = true;
+        await SqlDumpService.dump();
+        this.isDumping = false
       },
     },
     async mounted() {
@@ -106,6 +109,19 @@
   #top {
     display: flex;
     justify-content: space-between;
+
+    @media only screen and (max-width: 600px) {
+      display: block;
+
+      .buttons {
+        display: flex;
+        justify-content: space-between;
+        .btn {
+          margin-top: -20px;
+          margin-bottom: 20px;
+        }
+      }
+    }
 
     button {
       margin-top:10px
@@ -189,6 +205,7 @@
   }
 
   .btn--dump {
-    margin-left:10px
+    margin-left:10px;
+    background-color:#fff
   }
 </style>

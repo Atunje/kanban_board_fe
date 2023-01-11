@@ -4,9 +4,6 @@ $primary-color:#132980;
 $primary-color-light:#465f91;
 $secondary-color: #141313;
 $light-font: #FFF;
-
-/** Mixins **/
-
 .btn {
     height: 40px;
     padding: 5px 15px;
@@ -14,7 +11,7 @@ $light-font: #FFF;
     border: solid 1px;
     cursor: pointer;
     font-family: 'Albert Sans', sans-serif;
-    font-size: 17px;
+    font-size: 15px;
 }
 
 body {
