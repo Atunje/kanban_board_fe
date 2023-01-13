@@ -5,8 +5,11 @@
       <button @click="$modal.hide('add-column-modal')">❌</button>
     </div>
     <form @submit.prevent="onSubmit">
-      <label>Column Title</label>
-      <input v-model="title" placeholder="New Column Title" required>
+      <div class="modal__input-group">
+        <label>Column Title</label>
+        <input v-model="title" placeholder="New Column Title" required>
+        <small class="modal__error_msg" v-if="errors.title != undefined">{{ errors.title[0] }}</small>
+      </div>
       <button class="btn btn--primary btn--modal" type="submit"> {{ isLoading ? "Submitting" : "Submit" }}</button>
     </form>
   </modal>
@@ -20,7 +23,8 @@ export default {
   data() {
     return {
       title: "",
-      isLoading: false
+      isLoading: false,
+      errors: []
     }
   },
   methods: {
@@ -32,6 +36,9 @@ export default {
         this.title = "";
         this.$modal.hide('add-column-modal')
         this.$emit('created', response.data);
+        this.errors = [];
+      } else {
+        this.errors = response.errors;
       }
 
       this.isLoading = false;

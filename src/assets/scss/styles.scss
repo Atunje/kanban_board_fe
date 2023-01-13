@@ -40,6 +40,19 @@ body {
         display: flex;
         justify-content: space-between;
     }
+    &__input-group {
+        margin-bottom: 20px;
+    }
+    &__error_msg {
+        color: red
+    }
+    &__success_msg {
+        padding: 10px;
+        background-color: #32a852;
+        color: #d4fcdf;
+        border-radius: 5px;
+        margin-bottom: 20px
+    }
     form {
         padding: 20px;
         label {
@@ -53,7 +66,6 @@ body {
             border-radius: 4px;
             border: $secondary-color solid 1px;
             width: 94%;
-            margin-bottom: 20px;
             font-family: 'Albert Sans', sans-serif;
         }
         .btn--modal {

@@ -1,15 +1,24 @@
 <template>
-  <modal name="edit-card-modal" class="modal" :adaptive="true" height="380">
+  <modal name="edit-card-modal" class="modal" :adaptive="true" height="auto">
     <div class="modal__title">
       <div>{{ isNew ? "Add New Card" : "Edit Card" }}</div>
       <button @click="$modal.hide('edit-card-modal')">❌</button>
     </div>
     <form @submit.prevent="onSubmit">
-      <label>Title</label>
-      <input v-model="form.title" placeholder="New Card Title" required>
 
-      <label>Description</label>
-      <textarea v-model="form.description" required placeholder="Card Description" />
+      <div class="modal__success_msg" v-if="success_msg!=''">{{ success_msg }}</div>
+
+      <div class="modal__input-group">
+        <label>Title</label>
+        <input v-model="form.title" placeholder="New Card Title" required>
+        <small class="modal__error_msg" v-if="errors.title != undefined">{{ errors.title[0] }}</small>
+      </div>
+
+      <div class="modal__input-group">
+        <label>Description</label>
+        <textarea v-model="form.description" required placeholder="Card Description" />
+        <small class="modal__error_msg" v-if="errors.description != undefined">{{ errors.description[0] }}</small>
+      </div>
 
       <button type="submit" class="btn btn--primary btn--modal"> {{ isLoading ? "Submitting" : "Submit" }}</button>
     </form>
@@ -30,7 +39,9 @@ import {CardService} from "@/services";
         form: {
           title: "",
           description: "",
-        }
+        },
+        errors:[],
+        success_msg: ""
       }
     },
     methods: {
@@ -45,27 +56,43 @@ import {CardService} from "@/services";
         }
 
         if(response.success) {
-          this.$emit('saved');
-        }
 
-        if(this.isNew) {
-          this.form = {
-            title: "",
-            description: "",
-            column_id: this.card.column_id,
+          this.success_msg = response.message;
+
+          this.$emit('saved');
+
+          if(this.isNew) {
+            this.reset();
+          } else {
+            this.$modal.hide('edit-card-modal');
           }
+
         } else {
-          this.$modal.hide('edit-card-modal');
+          console.log(response)
+          this.errors = response.errors;
+          this.success_msg = ''
         }
 
         this.isLoading = false;
       },
+      initialize() {
+        this.errors = [];
+        this.success_msg = [];
+      },
+      reset() {
+        this.form = {
+          title: "",
+          description: "",
+          column_id: this.card.column_id,
+        }
+      }
     },
     watch: {
       card: {
         handler: function(newVal) {
           this.form = newVal;
           this.isNew = this.card.id === undefined;
+          this.initialize();
         },
         deep: true
       },
