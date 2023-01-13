@@ -68,7 +68,6 @@ import {CardService} from "@/services";
           }
 
         } else {
-          console.log(response)
           this.errors = response.errors;
           this.success_msg = ''
         }
@@ -90,7 +89,7 @@ import {CardService} from "@/services";
     watch: {
       card: {
         handler: function(newVal) {
-          this.form = newVal;
+          this.form = {...newVal};
           this.isNew = this.card.id === undefined;
           this.initialize();
         },

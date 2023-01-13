@@ -48,8 +48,9 @@ body {
     }
     &__success_msg {
         padding: 10px;
-        background-color: #32a852;
-        color: #d4fcdf;
+        background-color: #d4fcdf;
+        color: #32a852;
+        border: solid 1px #32a852;
         border-radius: 5px;
         margin-bottom: 20px
     }
